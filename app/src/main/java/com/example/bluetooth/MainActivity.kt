@@ -57,95 +57,112 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_1)
+        setContentView(R.layout.game_selector)
 
-        val scanButton: Button = findViewById(R.id.scan)
-        val startServerButton: Button = findViewById(R.id.startServer)
-        val deviceListView: ListView = findViewById(R.id.deviceList)
-        val statusText: TextView = findViewById(R.id.statusText)
+        val offlineGameButton = findViewById<Button>(R.id.offline_game)
+        val onlineGameButton = findViewById<Button>(R.id.online_game)
 
-        val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
-        bluetoothAdapter = bluetoothManager.adapter
-
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Device doesn't support Bluetooth", Toast.LENGTH_SHORT).show()
-            return
+        offlineGameButton.setOnClickListener {
+            val intent = Intent(this, GameActivity::class.java)
+            startActivity(intent)
         }
 
-        deviceListAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
-        deviceListView.adapter = deviceListAdapter
 
-        if (bluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // Request permissions
-                requestBluetoothPermissions()
+        onlineGameButton.setOnClickListener {
+            setContentView(R.layout.activity_1)
+            val scanButton: Button = findViewById(R.id.scan)
+            val startServerButton: Button = findViewById(R.id.startServer)
+            val deviceListView: ListView = findViewById(R.id.deviceList)
+            val statusText: TextView = findViewById(R.id.statusText)
+
+            val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
+            bluetoothAdapter = bluetoothManager.adapter
+
+            if (bluetoothAdapter == null) {
+                Toast.makeText(this, "Device doesn't support Bluetooth", Toast.LENGTH_SHORT).show()
+                setContentView(R.layout.game_selector)
             }
-            startActivityForResult(enableBtIntent, 1)
-        }
 
-        val requestCode = 1
-        val discoverableIntent: Intent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
-            putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
-        }
-        startActivityForResult(discoverableIntent, requestCode)
+            deviceListAdapter =
+                ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
+            deviceListView.adapter = deviceListAdapter
 
-        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        pairedDevices?.forEach { device ->
-            val deviceName = device.name
-            val deviceHardwareAddress = device.address // MAC address
-            Log.d(TAG, "Paired: $deviceName")
-            Log.d(TAG, "MAC: $deviceHardwareAddress")
-        }
-
-        // Start Server
-        startServerButton.setOnClickListener {
-            if (hasBluetoothPermissions()) {
-                BluetoothConnection.isServer = true
-                startServer()
-                statusText.text = "Status: Listening for connections..."
-            } else {
-                Toast.makeText(this, "Please grant Bluetooth permissions", Toast.LENGTH_SHORT).show()
-                requestBluetoothPermissions()
-            }
-        }
-
-        // Discover other devices
-        scanButton.setOnClickListener {
-            if (hasBluetoothPermissions()) {
-                if (isLocationEnabled()) {
-                    BluetoothConnection.isServer = false
-                    startBluetoothDiscovery()
-                } else {
-                    Toast.makeText(this, "Please enable Location services", Toast.LENGTH_LONG).show()
-                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                    startActivity(intent)
+            if (bluetoothAdapter?.isEnabled == false) {
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Request permissions
+                    requestBluetoothPermissions()
                 }
-            } else {
-                Toast.makeText(this, "Please grant Bluetooth permissions", Toast.LENGTH_SHORT).show()
-                requestBluetoothPermissions()
+                startActivityForResult(enableBtIntent, 1)
             }
-        }
 
-        // Connect to Devices
-        deviceListView.setOnItemClickListener { _, _, position, _ ->
-            if (hasBluetoothPermissions()) {
-                val device = discoveredDevices[position]
-                statusText.text = "Status: Connecting to ${device.name}..."
-                pairAndConnect(device)
+            val requestCode = 1
+            val discoverableIntent: Intent =
+                Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
+                    putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
+                }
+            startActivityForResult(discoverableIntent, requestCode)
+
+            val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+            pairedDevices?.forEach { device ->
+                val deviceName = device.name
+                val deviceHardwareAddress = device.address // MAC address
+                Log.d(TAG, "Paired: $deviceName")
+                Log.d(TAG, "MAC: $deviceHardwareAddress")
             }
-        }
 
-        val filter = IntentFilter().apply {
-            addAction(BluetoothDevice.ACTION_FOUND)
-            addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
-            addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+            // Start Server
+            startServerButton.setOnClickListener {
+                if (hasBluetoothPermissions()) {
+                    BluetoothConnection.isServer = true
+                    startServer()
+                    statusText.text = "Status: Listening for connections..."
+                } else {
+                    Toast.makeText(this, "Please grant Bluetooth permissions", Toast.LENGTH_SHORT)
+                        .show()
+                    requestBluetoothPermissions()
+                }
+            }
+
+            // Discover other devices
+            scanButton.setOnClickListener {
+                if (hasBluetoothPermissions()) {
+                    if (isLocationEnabled()) {
+                        BluetoothConnection.isServer = false
+                        startBluetoothDiscovery()
+                    } else {
+                        Toast.makeText(this, "Please enable Location services", Toast.LENGTH_LONG)
+                            .show()
+                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        startActivity(intent)
+                    }
+                } else {
+                    Toast.makeText(this, "Please grant Bluetooth permissions", Toast.LENGTH_SHORT)
+                        .show()
+                    requestBluetoothPermissions()
+                }
+            }
+
+            // Connect to Devices
+            deviceListView.setOnItemClickListener { _, _, position, _ ->
+                if (hasBluetoothPermissions()) {
+                    val device = discoveredDevices[position]
+                    statusText.text = "Status: Connecting to ${device.name}..."
+                    pairAndConnect(device)
+                }
+            }
+
+            val filter = IntentFilter().apply {
+                addAction(BluetoothDevice.ACTION_FOUND)
+                addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+                addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+            }
+            registerReceiver(receiver, filter)
         }
-        registerReceiver(receiver, filter)
     }
 
 
