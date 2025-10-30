@@ -2,8 +2,10 @@ package com.example.bluetooth
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -19,16 +21,8 @@ class OfflineGameActivity : ComponentActivity() {
     private val opponentSymbol: String
     var difficulty = "Easy"
     private var gameOver = false;
-    val resetGameButton = findViewById<Button>(R.id.resetGame)
-    val settingsButton = findViewById<Button>(R.id.settings)
-    val spinner = findViewById<Spinner>(R.id.spinner)
-    val settingsSubmit = findViewById<Button>(R.id.submit)
-    val settingsLeave = findViewById<Button>(R.id.leaveSettings)
 
     val difficulties = listOf("Easy", "Medium", "Hard")
-
-    val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, difficulties)
-
 
 
     init {
@@ -39,13 +33,30 @@ class OfflineGameActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_game)
+        setContentView(R.layout.activity_game_offline)
 
+        val resetGameButton = findViewById<Button>(R.id.resetGame)
+        val settingsButton = findViewById<Button>(R.id.settings)
+        val settingsPage = findViewById<LinearLayout>(R.id.settingsPage)
+        val title = findViewById<TextView>(R.id.title)
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, difficulties)
+        val spinner = findViewById<Spinner>(R.id.spinner)
+        val settingsSubmit = findViewById<Button>(R.id.submit)
+        val settingsLeave = findViewById<Button>(R.id.leaveSettings)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
 
-        gridLayout = findViewById(R.id.gridLayout)
-        statusText = findViewById(R.id.statusText)
+        settingsPage.visibility = View.GONE
+        spinner.visibility = View.GONE
+        settingsSubmit.visibility = View.GONE
+        settingsLeave.visibility = View.GONE
+
+        gridLayout = findViewById(R.id.gridLayout1)
+        statusText = findViewById(R.id.statusText1)
+
+        gridLayout.visibility = View.VISIBLE
+        statusText.visibility = View.VISIBLE
 
         // 3x3 Grid
         for (i in 0..2) {
@@ -74,11 +85,15 @@ class OfflineGameActivity : ComponentActivity() {
         updateUI()
 
         settingsButton.setOnClickListener {
-            setContentView(R.layout.settings)
-        }
-
-        resetGameButton.setOnClickListener {
-            resetGame()
+            spinner.visibility = View.VISIBLE
+            settingsSubmit.visibility = View.VISIBLE
+            settingsLeave.visibility = View.VISIBLE
+            settingsPage.visibility = View.VISIBLE
+            gridLayout.visibility = View.GONE
+            statusText.visibility = View.GONE
+            title.visibility = View.GONE
+            resetGameButton.visibility = View.GONE
+            settingsButton.visibility = View.GONE
         }
 
         settingsSubmit.setOnClickListener {
@@ -86,7 +101,19 @@ class OfflineGameActivity : ComponentActivity() {
         }
 
         settingsLeave.setOnClickListener {
-            setContentView(R.layout.activity_game_offline)
+            spinner.visibility = View.GONE
+            settingsSubmit.visibility = View.GONE
+            settingsLeave.visibility = View.GONE
+            settingsPage.visibility = View.GONE
+            gridLayout.visibility = View.VISIBLE
+            statusText.visibility = View.VISIBLE
+            title.visibility = View.VISIBLE
+            resetGameButton.visibility = View.VISIBLE
+            settingsButton.visibility = View.VISIBLE
+        }
+
+        resetGameButton.setOnClickListener {
+            resetGame()
         }
     }
 
@@ -122,14 +149,14 @@ class OfflineGameActivity : ComponentActivity() {
 
     private fun aiMove(difficulty: String) {
         //getMove(difficulty) return row and column
-        val button = buttons[row][col]
-
-         //Mark the button
-        button.text = opponentSymbol
-        button.isEnabled = false
+//        val button = buttons[row][col]
+//
+//         //Mark the button
+//        button.text = opponentSymbol
+//        button.isEnabled = false
 
         // Switch turn
-        myTurn = false
+        myTurn = true
         updateUI()
 
         // Check for win or draw
@@ -233,11 +260,7 @@ class OfflineGameActivity : ComponentActivity() {
         }
 
         myTurn = true;
+        gameOver = false;
         updateUI()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        BluetoothConnection.connectedThread?.messageListener = null
     }
 }

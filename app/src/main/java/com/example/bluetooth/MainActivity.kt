@@ -63,12 +63,17 @@ class MainActivity : ComponentActivity() {
         val onlineGameButton = findViewById<Button>(R.id.online_game)
 
         offlineGameButton.setOnClickListener {
-            val intent = Intent(this, GameActivity::class.java)
-            startActivity(intent)
+                val intent = Intent(this, OfflineGameActivity::class.java)
+                startActivity(intent)
         }
 
 
         onlineGameButton.setOnClickListener {
+            if (!hasBluetoothPermissions()) {
+                requestBluetoothPermissions()
+                return@setOnClickListener  // <- IMPORTANT: stop here, wait for onRequestPermissionsResult
+            }
+
             setContentView(R.layout.activity_1)
             val scanButton: Button = findViewById(R.id.scan)
             val startServerButton: Button = findViewById(R.id.startServer)
