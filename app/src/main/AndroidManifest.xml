@@ -36,6 +36,10 @@
 
         <activity android:name=".GameActivity" />
         <activity android:name=".OfflineGameActivity" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:label="History" />
     </application>
 
 </manifest>

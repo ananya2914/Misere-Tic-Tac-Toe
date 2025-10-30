@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.gridlayout.widget.GridLayout
+
 private const val TAG = "[Project 2: Networking]"
 
 
@@ -131,13 +132,17 @@ class GameActivity : ComponentActivity() {
     private fun checkGameState() {
         val loser = checkWinner()
         if (loser != null) {
+
             // In Misere, getting 3 in a row means you lose
             if (loser == mySymbol) {
                 statusText.text = "You Lost!"
                 statusText.setTextColor(getColor(android.R.color.holo_red_dark))
+                insertTestData(this, "Lost", "Normal")
+
             } else {
                 statusText.text = "You Won!"
                 statusText.setTextColor(getColor(android.R.color.holo_green_dark))
+                insertTestData(this, "Won", "Normal")
             }
             disableAllButtons()
             Toast.makeText(this, "Game Over! $loser got 3 in a row and loses!", Toast.LENGTH_LONG).show()

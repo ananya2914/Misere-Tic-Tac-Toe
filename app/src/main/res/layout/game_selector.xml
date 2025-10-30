@@ -87,6 +87,22 @@
                 android:background="@drawable/btn_secondary_bg"
                 android:paddingTop="14dp"
                 android:paddingBottom="14dp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="12dp" />
+
+            <Button
+                android:id="@+id/history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_secondary_bg"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:text="HISTORY"
+                android:textAllCaps="true"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </RelativeLayout>

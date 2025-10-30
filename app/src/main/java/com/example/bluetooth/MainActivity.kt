@@ -29,7 +29,12 @@ import java.util.UUID
 import android.widget.ArrayAdapter
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.bluetooth.AppDatabase
+import com.example.bluetooth.PastGame
+import kotlinx.coroutines.launch
 import java.io.IOException
+
 
 private const val TAG = "[Project 2: Networking]"
 const val MESSAGE_READ  = 0
@@ -59,10 +64,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.game_selector)
-
         val offlineGameButton = findViewById<Button>(R.id.offline_game)
         val onlineGameButton = findViewById<Button>(R.id.online_game)
-
+        val historyButton = findViewById<Button>(R.id.history)
+        insertTestData(this, "Losttttttt", "Normal")
+        historyButton.setOnClickListener {
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
+        }
         offlineGameButton.setOnClickListener {
                 val intent = Intent(this, OfflineGameActivity::class.java)
                 startActivity(intent)
@@ -173,6 +182,8 @@ class MainActivity : ComponentActivity() {
             }
             registerReceiver(receiver, filter)
         }
+
+
     }
 
 
