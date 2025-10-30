@@ -24,13 +24,7 @@ class OfflineGameActivity : ComponentActivity() {
     private val opponentSymbol: String
     var difficulty = "Easy"
     private var gameOver = false;
-    val resetGameButton = findViewById<Button>(R.id.resetGame)
-    val settingsButton = findViewById<Button>(R.id.settings)
-    val spinner = findViewById<Spinner>(R.id.spinner)
-    val settingsSubmit = findViewById<Button>(R.id.submit)
-    val settingsLeave = findViewById<Button>(R.id.leaveSettings)
     val difficulties = listOf("Easy", "Medium", "Hard")
-    val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, difficulties)
     private lateinit var aiManager: AIManager
 
 
