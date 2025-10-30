@@ -15,6 +15,11 @@ import androidx.activity.ComponentActivity
 import androidx.gridlayout.widget.GridLayout
 import com.example.bluetooth.ai.AIManager
 
+import android.view.Gravity
+import androidx.core.content.res.ResourcesCompat
+import android.graphics.drawable.Drawable
+import kotlin.math.min
+
 
 class OfflineGameActivity : ComponentActivity() {
     private lateinit var gridLayout: GridLayout
@@ -35,6 +40,27 @@ class OfflineGameActivity : ComponentActivity() {
             opponentSymbol = "O"
             myTurn = true
     }
+    private fun setMarkIcon(btn: Button, symbol: String, scale: Float = 0.6f) {
+        val resId = if (symbol == "X") R.drawable.ic_x else R.drawable.ic_o
+
+        // Wait for size if needed
+        if (btn.width == 0 || btn.height == 0) {
+            btn.post { setMarkIcon(btn, symbol, scale) }
+            return
+        }
+
+        val side = (min(btn.width, btn.height) * scale).toInt()  // e.g., 60% of cell
+        val d: Drawable = ResourcesCompat.getDrawable(resources, resId, theme)!!.mutate()
+        d.setBounds(0, 0, side, side)
+
+        // Center the icon in the cell
+        btn.foreground = d
+        btn.foregroundGravity = Gravity.CENTER
+
+        // (Optional) hide the text but keep it for your logic
+        btn.setTextColor(android.graphics.Color.TRANSPARENT)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -161,6 +187,7 @@ class OfflineGameActivity : ComponentActivity() {
 
         // Mark the button
         button.text = mySymbol
+        setMarkIcon(button, mySymbol)   // ← instead of setCompoundDrawables...
         button.isEnabled = false
 
         // Switch turn
@@ -184,7 +211,9 @@ class OfflineGameActivity : ComponentActivity() {
 
         // 3. Mark the button
         button.text = opponentSymbol
+        setMarkIcon(button, opponentSymbol)   // ← instead of setCompoundDrawables...
         button.isEnabled = false
+
 
         // 4. Switch turn
         myTurn = true // Switch back to human
@@ -281,19 +310,20 @@ class OfflineGameActivity : ComponentActivity() {
     }
 
     private fun resetGame() {
-        for (i in 0..2) {
-            for (j in 0..2) {
-                buttons[i][j]?.apply {
-                    text = ""
-                    isEnabled = true
-                }
+        for (i in 0..2) for (j in 0..2) {
+            buttons[i][j]?.apply {
+                text = ""
+                foreground = null            // ← clear the centered icon
+                setTextColor(getColor(android.R.color.black)) // or keep transparent
+                isEnabled = true
             }
         }
-
-        myTurn = true;
-        gameOver = false;
+        myTurn = true
+        gameOver = false
         updateUI()
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()

@@ -43,31 +43,7 @@ class GameActivity : ComponentActivity() {
         gridLayout = findViewById(R.id.gridLayout)
         statusText = findViewById(R.id.statusText)
 
-        // 3x3 Grid
-        for (i in 0..2) {
-            for (j in 0..2) {
-                val button = Button(this).apply {
-                    layoutParams = GridLayout.LayoutParams().apply {
-                        width = 0
-                        height = 0
-                        columnSpec = GridLayout.spec(j, 1f)
-                        rowSpec = GridLayout.spec(i, 1f)
-                        setMargins(8, 8, 8, 8)
-                    }
-                    background = ContextCompat.getDrawable(this@GameActivity, R.drawable.cell_bg_selector)
-                    isAllCaps = false
-                    textSize = 36f
-                    setTextColor(Color.parseColor("#2E2E2E"))
 
-                    text = ""
-                    tag = "$i,$j"
-
-                    setOnClickListener { onButtonClick(i, j) }
-                }
-                buttons[i][j] = button
-                gridLayout.addView(button)
-            }
-        }
 
         // Set up message listener
         BluetoothConnection.connectedThread?.messageListener = { message ->

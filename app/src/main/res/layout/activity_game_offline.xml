@@ -17,7 +17,7 @@
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tic-Tac-Toe"
+            android:text="Tic-Tac-Tooe"
             android:textSize="28sp"
             android:textStyle="bold"
             android:paddingTop="8dp"
@@ -41,20 +41,146 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:padding="12dp"
-            android:background="#0D000000"
+            android:background="@android:color/white"
             android:elevation="2dp">
 
             <!-- ANDROIDX GRIDLAYOUT: note the app: namespace below -->
-            <androidx.gridlayout.widget.GridLayout
+            <!-- Square board container -->
+            <com.example.bluetooth.SquareGridLayout
+
                 android:id="@+id/gridLayout1"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                app:useDefaultMargins="true"
-                app:alignmentMode="alignMargins"
                 app:rowCount="3"
                 app:columnCount="3"
-                android:background="#2F3C73" />
+                android:background="#2F3C73"
+                app:useDefaultMargins="true"
+                app:alignmentMode="alignMargins">
+
+                <!-- 9 equally weighted cells -->
+                <!-- Row 0 -->
+                <ImageButton
+                    android:id="@+id/cell_00"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="0"
+                    app:layout_column="0"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 0,0" />
+
+                <ImageButton
+                    android:id="@+id/cell_01"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="0"
+                    app:layout_column="1"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 0,1" />
+
+                <ImageButton
+                    android:id="@+id/cell_02"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="0"
+                    app:layout_column="2"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 0,2" />
+
+                <!-- Row 1 -->
+                <ImageButton
+                    android:id="@+id/cell_10"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="1"
+                    app:layout_column="0"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 1,0" />
+
+                <ImageButton
+                    android:id="@+id/cell_11"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="1"
+                    app:layout_column="1"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 1,1" />
+
+                <ImageButton
+                    android:id="@+id/cell_12"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="1"
+                    app:layout_column="2"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 1,2" />
+
+                <!-- Row 2 -->
+                <ImageButton
+                    android:id="@+id/cell_20"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="2"
+                    app:layout_column="0"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 2,0" />
+
+                <ImageButton
+                    android:id="@+id/cell_21"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="2"
+                    app:layout_column="1"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 2,1" />
+
+                <ImageButton
+                    android:id="@+id/cell_22"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_row="2"
+                    app:layout_column="2"
+                    app:layout_rowWeight="1"
+                    app:layout_columnWeight="1"
+                    android:background="#D9D9D9"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Cell 2,2" />
+
+            </com.example.bluetooth.SquareGridLayout>
+
 
         </LinearLayout>
 
