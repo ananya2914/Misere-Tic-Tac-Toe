@@ -1,7 +1,9 @@
 package com.example.bluetooth
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
+import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
@@ -9,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.gridlayout.widget.GridLayout
+import com.example.bluetooth.ai.AIManager
 
 class OfflineGameActivity : ComponentActivity() {
     private lateinit var gridLayout: GridLayout
@@ -24,10 +27,9 @@ class OfflineGameActivity : ComponentActivity() {
     val spinner = findViewById<Spinner>(R.id.spinner)
     val settingsSubmit = findViewById<Button>(R.id.submit)
     val settingsLeave = findViewById<Button>(R.id.leaveSettings)
-
     val difficulties = listOf("Easy", "Medium", "Hard")
-
     val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, difficulties)
+    private lateinit var aiManager: AIManager
 
 
 
@@ -40,7 +42,7 @@ class OfflineGameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
-
+        aiManager = AIManager()
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
 
@@ -121,18 +123,21 @@ class OfflineGameActivity : ComponentActivity() {
     }
 
     private fun aiMove(difficulty: String) {
-        //getMove(difficulty) return row and column
-        val button = buttons[row][col]
+        // 1. Call the AI manager to get its move
+        val move = aiManager.getAiMove(buttons, difficulty)
 
-         //Mark the button
+        // 2. Use the move's row and col to get the button
+        val button = buttons[move.row][move.col] ?: return
+
+        // 3. Mark the button
         button.text = opponentSymbol
         button.isEnabled = false
 
-        // Switch turn
-        myTurn = false
+        // 4. Switch turn
+        myTurn = true // Switch back to human
         updateUI()
 
-        // Check for win or draw
+        // 5. Check for win or draw
         checkGameState()
     }
 
