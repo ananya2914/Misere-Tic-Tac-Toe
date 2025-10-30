@@ -67,7 +67,6 @@ class MainActivity : ComponentActivity() {
         val offlineGameButton = findViewById<Button>(R.id.offline_game)
         val onlineGameButton = findViewById<Button>(R.id.online_game)
         val historyButton = findViewById<Button>(R.id.history)
-        insertTestData(this, "Losttttttt", "Normal")
         historyButton.setOnClickListener {
             val intent = Intent(this, HistoryActivity::class.java)
             startActivity(intent)

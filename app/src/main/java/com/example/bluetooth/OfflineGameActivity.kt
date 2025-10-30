@@ -250,9 +250,11 @@ class OfflineGameActivity : ComponentActivity() {
             if (loser == mySymbol) {
                 statusText.text = "You Lost!"
                 statusText.setTextColor(getColor(android.R.color.holo_red_dark))
+                insertTestData(this, "Lost", difficulty)
             } else {
                 statusText.text = "You Won!"
                 statusText.setTextColor(getColor(android.R.color.holo_green_dark))
+                insertTestData(this, "Won", difficulty)
             }
             disableAllButtons()
             Toast.makeText(this, "Game Over! $loser got 3 in a row and loses!", Toast.LENGTH_LONG).show()
@@ -260,6 +262,7 @@ class OfflineGameActivity : ComponentActivity() {
         } else if (isBoardFull()) {
             statusText.text = "It's a Draw!"
             statusText.setTextColor(getColor(android.R.color.holo_orange_dark))
+            insertTestData(this, "Draw", difficulty)
             disableAllButtons()
             Toast.makeText(this, "Game Over! It's a draw!", Toast.LENGTH_LONG).show()
         }
