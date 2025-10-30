@@ -14,7 +14,7 @@ class OfflineGameActivity : ComponentActivity() {
     private lateinit var gridLayout: GridLayout
     private lateinit var statusText: TextView
     private val buttons = Array(3) { Array<Button?>(3) { null } }
-    private var myTurn = false
+    private var myTurn = true;
     private val mySymbol: String
     private val opponentSymbol: String
     var difficulty = "Easy"
@@ -124,8 +124,8 @@ class OfflineGameActivity : ComponentActivity() {
         //getMove(difficulty) return row and column
         val button = buttons[row][col]
 
-        // Mark the button
-        button.text = mySymbol
+         //Mark the button
+        button.text = opponentSymbol
         button.isEnabled = false
 
         // Switch turn
