@@ -88,8 +88,12 @@ class MainActivity : ComponentActivity() {
                 setContentView(R.layout.game_selector)
             }
 
-            deviceListAdapter =
-                ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
+            deviceListAdapter = ArrayAdapter(
+                this,
+                R.layout.item_device,   // custom row layout (you'll add it below)
+                R.id.deviceName,        // TextView inside that layout
+                mutableListOf<String>() // your device names
+            )
             deviceListView.adapter = deviceListAdapter
 
             if (bluetoothAdapter?.isEnabled == false) {

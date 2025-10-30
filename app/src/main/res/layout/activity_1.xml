@@ -1,54 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/statusText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Status: Not connected"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:paddingBottom="12dp"
-        android:textColor="#FF5722" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <Button
-        android:id="@+id/startServer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Start Server (Listen for Connections)"
-        android:textSize="14sp"
-        android:padding="12dp"
-        android:backgroundTint="#4CAF50" />
+        <!-- Title -->
+        <TextView
+            android:id="@+id/screenTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bluetooth — Online Play"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="8dp" />
 
-    <Button
-        android:id="@+id/scan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Scan for Devices (Connect as Client)"
-        android:textSize="14sp"
-        android:padding="12dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="#2196F3" />
+        <!-- Status chip -->
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chip_status"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Status: Not connected"
+            android:textColor="#D35400"
+            android:textSize="14sp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Discovered Devices (Tap to Connect)"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp" />
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="16dp">
 
-    <ListView
-        android:id="@+id/deviceList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp" />
+            <Button
+                android:id="@+id/startServer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_primary_bg"
+                android:text="Start Server (Listen for Connections)"
+                android:textAllCaps="true"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp" />
 
-</LinearLayout>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <Button
+                android:id="@+id/scan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_secondary_bg"
+                android:text="Scan for Devices (Connect as Client)"
+                android:textAllCaps="true"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp" />
+        </LinearLayout>
+
+        <!-- Card for device list -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginTop="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Discovered Devices"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <ListView
+                android:id="@+id/deviceList"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:divider="@drawable/list_divider"
+                android:dividerHeight="1dp"
+                android:listSelector="@drawable/list_selector" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
