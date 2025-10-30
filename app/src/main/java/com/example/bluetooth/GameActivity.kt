@@ -1,4 +1,6 @@
 package com.example.bluetooth
+import android.graphics.Color
+import androidx.core.content.ContextCompat
 
 
 import android.os.Bundle
@@ -9,6 +11,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.gridlayout.widget.GridLayout
 private const val TAG = "[Project 2: Networking]"
+
+
 class GameActivity : ComponentActivity() {
 
 
@@ -50,13 +54,15 @@ class GameActivity : ComponentActivity() {
                         rowSpec = GridLayout.spec(i, 1f)
                         setMargins(8, 8, 8, 8)
                     }
+                    background = ContextCompat.getDrawable(this@GameActivity, R.drawable.cell_bg_selector)
+                    isAllCaps = false
                     textSize = 36f
-                    text = ""
-                    tag = "$i,$j" // Store position as tag
+                    setTextColor(Color.parseColor("#2E2E2E"))
 
-                    setOnClickListener {
-                        onButtonClick(i, j)
-                    }
+                    text = ""
+                    tag = "$i,$j"
+
+                    setOnClickListener { onButtonClick(i, j) }
                 }
                 buttons[i][j] = button
                 gridLayout.addView(button)

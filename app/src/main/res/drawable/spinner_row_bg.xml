@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed (touch) -->
+    <item android:state_pressed="true">
+        <shape><solid android:color="#CDEAD5"/></shape>
+    </item>
+
+    <!-- Hovered (mouse/trackpad) -->
+    <item android:state_hovered="true">
+        <shape><solid android:color="#CDEAD5"/></shape>
+    </item>
+
+    <!-- Focused (keyboard nav) -->
+    <item android:state_focused="true">
+        <shape><solid android:color="#CDEAD5"/></shape>
+    </item>
+
+    <!-- Activated / Checked (currently selected row) -->
+    <item android:state_activated="true">
+        <shape><solid android:color="#CDEAD5"/></shape>
+    </item>
+    <item android:state_checked="true">
+        <shape><solid android:color="#CDEAD5"/></shape>
+    </item>
+
+    <!-- Default -->
+    <item>
+        <shape><solid android:color="#FFFFFFFF"/></shape>
+    </item>
+</selector>

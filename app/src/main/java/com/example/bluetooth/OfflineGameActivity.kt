@@ -1,5 +1,5 @@
 package com.example.bluetooth
-
+import android.view.ViewGroup
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.gridlayout.widget.GridLayout
 import com.example.bluetooth.ai.AIManager
+
 
 class OfflineGameActivity : ComponentActivity() {
     private lateinit var gridLayout: GridLayout
@@ -44,15 +45,35 @@ class OfflineGameActivity : ComponentActivity() {
         val settingsPage = findViewById<LinearLayout>(R.id.settingsPage)
         val title = findViewById<TextView>(R.id.title)
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, difficulties)
         val spinner = findViewById<Spinner>(R.id.spinner)
-        val settingsSubmit = findViewById<Button>(R.id.submit)
-        val settingsLeave = findViewById<Button>(R.id.leaveSettings)
+
+        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, difficulties) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val v = super.getView(position, convertView, parent)
+                val tv = v.findViewById<TextView>(R.id.label)
+                tv.text = getItem(position) ?: ""
+                return v
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val v = layoutInflater.inflate(R.layout.spinner_dropdown_item, parent, false)
+                val tv = v.findViewById<TextView>(R.id.label)
+                tv.text = getItem(position) ?: ""
+
+                val isSelected = (position == spinner.selectedItemPosition)
+                v.isActivated = isSelected
+                v.isSelected  = isSelected
+                return v
+            }
+        }
+        spinner.adapter = adapter
+
 
         aiManager = AIManager()
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
-
+        val settingsSubmit = findViewById<Button>(R.id.submit)
+        val settingsLeave = findViewById<Button>(R.id.leaveSettings)
         settingsPage.visibility = View.GONE
         spinner.visibility = View.GONE
         settingsSubmit.visibility = View.GONE
@@ -91,6 +112,7 @@ class OfflineGameActivity : ComponentActivity() {
         updateUI()
 
         settingsButton.setOnClickListener {
+
             spinner.visibility = View.VISIBLE
             settingsSubmit.visibility = View.VISIBLE
             settingsLeave.visibility = View.VISIBLE
