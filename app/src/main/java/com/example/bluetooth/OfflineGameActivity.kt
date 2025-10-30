@@ -20,6 +20,10 @@ import androidx.core.content.res.ResourcesCompat
 import android.graphics.drawable.Drawable
 import kotlin.math.min
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import androidx.core.content.ContextCompat
+
 
 class OfflineGameActivity : ComponentActivity() {
     private lateinit var gridLayout: GridLayout
@@ -122,13 +126,19 @@ class OfflineGameActivity : ComponentActivity() {
                         rowSpec = GridLayout.spec(i, 1f)
                         setMargins(8, 8, 8, 8)
                     }
-                    textSize = 36f
-                    text = ""
-                    tag = "$i,$j" // Store position as tag
+                    background = ColorDrawable(Color.WHITE)
+                    backgroundTintList = null   // Prevent gray tint
+                    minHeight = 0
+                    minWidth = 0
+                    setPadding(0, 0, 0, 0)
 
-                    setOnClickListener {
-                        onButtonClick(i, j)
-                    }
+                    isAllCaps = false
+                    textSize = 36f
+                    setTextColor(Color.parseColor("#2E2E2E"))
+                    text = ""
+                    tag = "$i,$j"
+
+                    setOnClickListener { onButtonClick(i, j) }
                 }
                 buttons[i][j] = button
                 gridLayout.addView(button)
