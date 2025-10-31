@@ -2,6 +2,11 @@ package com.example.bluetooth
 import android.graphics.Color
 import androidx.core.content.ContextCompat
 
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.view.Gravity
+import kotlin.math.min
+import androidx.core.content.res.ResourcesCompat
 
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +29,46 @@ class GameActivity : ComponentActivity() {
     private val mySymbol: String
     private val opponentSymbol: String
 
+    private fun setMarkIcon(btn: Button, symbol: String, scale: Float = 0.6f) {
+        val ctx = btn.context
+        val resId = if (symbol == "X") R.drawable.ic_x else R.drawable.ic_o
+
+        if (btn.width == 0 || btn.height == 0) {
+            btn.post { setMarkIcon(btn, symbol, scale) }
+            return
+        }
+        val side = (min(btn.width, btn.height) * scale).toInt()
+        val d: Drawable = ResourcesCompat.getDrawable(ctx.resources, resId, ctx.theme)!!.mutate()
+        d.setBounds(0, 0, side, side)
+
+        // Draw centered on top of the button
+        btn.foreground = d            // API 23+
+        btn.foregroundGravity = Gravity.CENTER
+    }
+
+    private fun buildBoard() {
+        for (i in 0..2) for (j in 0..2) {
+            val b = Button(this).apply {
+                layoutParams = GridLayout.LayoutParams().apply {
+                    width = 0; height = 0
+                    columnSpec = GridLayout.spec(j, 1f)
+                    rowSpec = GridLayout.spec(i, 1f)
+                    setMargins(8, 8, 8, 8)
+                }
+                background = ColorDrawable(Color.WHITE) // pure white cell
+                backgroundTintList = null               // prevent Material gray tint on disable
+                minHeight = 0; minWidth = 0
+                setPadding(0, 0, 0, 0)
+
+                text = ""                               // keep text for logic; hide visually
+                setTextColor(Color.TRANSPARENT)
+                setOnClickListener { onButtonClick(i, j) }
+            }
+            buttons[i][j] = b
+            gridLayout.addView(b)
+        }
+    }
+
     init {
         // Server plays as X (goes first), Client plays as O
         if (BluetoothConnection.isServer) {
@@ -43,6 +88,14 @@ class GameActivity : ComponentActivity() {
 
         gridLayout = findViewById(R.id.gridLayout)
         statusText = findViewById(R.id.statusText)
+
+        buildBoard()
+
+        BluetoothConnection.connectedThread?.messageListener = { message ->
+            runOnUiThread { handleReceivedMessage(message) }
+        }
+
+        updateUI()
 
 
 
@@ -72,6 +125,7 @@ class GameActivity : ComponentActivity() {
 
         // Mark the button
         button.text = mySymbol
+        setMarkIcon(button, mySymbol, scale = 0.6f)  // 👈 add this
         button.isEnabled = false
 
         // Send move to opponent
@@ -104,6 +158,7 @@ class GameActivity : ComponentActivity() {
                 // Update the button
                 buttons[row][col]?.apply {
                     text = symbol
+                    setMarkIcon(this, symbol, scale = 0.6f)  // 👈 add this
                     isEnabled = false
                 }
 
@@ -213,12 +268,11 @@ class GameActivity : ComponentActivity() {
             for (j in 0..2) {
                 buttons[i][j]?.apply {
                     text = ""
+                    foreground = null              // 👈 clear centered icon
                     isEnabled = true
                 }
             }
         }
-
-        // Server always goes first
         myTurn = BluetoothConnection.isServer
         updateUI()
     }
