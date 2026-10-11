@@ -17,7 +17,7 @@
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tic-Tac-Tooe"
+            android:text="Tic-Tac-Toe"
             android:textSize="28sp"
             android:textStyle="bold"
             android:paddingTop="8dp"

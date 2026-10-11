@@ -61,6 +61,7 @@ class GameActivity : ComponentActivity() {
                 }
                 background = ColorDrawable(Color.WHITE) // pure white cell
                 backgroundTintList = null               // prevent Material gray tint on disable
+                stateListAnimator = null                // no raised-button shadow on the board
                 minHeight = 0; minWidth = 0
                 setPadding(0, 0, 0, 0)
 

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center">
+    android:gravity="center_horizontal">
 
     <TextView
         android:layout_width="wrap_content"
@@ -25,14 +25,24 @@
         android:paddingBottom="24dp"
         android:textColor="#FF5722" />
 
-    <androidx.gridlayout.widget.GridLayout
-        android:id="@+id/gridLayout"
+    <!-- Square board; the navy background shows through the cell margins as grid lines -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="16dp"
-        app:columnCount="3"
-        app:rowCount="3" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"
+        android:background="@android:color/white"
+        android:elevation="2dp">
+
+        <com.example.bluetooth.SquareGridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="#2F3C73"
+            app:columnCount="3"
+            app:rowCount="3" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/playAgain"
