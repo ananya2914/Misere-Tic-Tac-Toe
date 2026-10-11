@@ -60,6 +60,13 @@ class MainActivity : ComponentActivity() {
     private var acceptThread: AcceptThread? = null
     private var connectThread: ConnectThread? = null
 
+    // True while a client connection attempt is in flight, so repeated taps
+    // (easy on a slow device) don't cancel an attempt that is about to succeed
+    @Volatile private var connecting = false
+
+    // Device we asked to pair with; only that bond completing should trigger a connect
+    private var pendingBondAddress: String? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,19 +90,19 @@ class MainActivity : ComponentActivity() {
                 return@setOnClickListener  // <- IMPORTANT: stop here, wait for onRequestPermissionsResult
             }
 
-            setContentView(R.layout.activity_1)
-            val scanButton: Button = findViewById(R.id.scan)
-            val startServerButton: Button = findViewById(R.id.startServer)
-            val deviceListView: ListView = findViewById(R.id.deviceList)
-            val statusText: TextView = findViewById(R.id.statusText)
-
             val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
             bluetoothAdapter = bluetoothManager.adapter
 
             if (bluetoothAdapter == null) {
                 Toast.makeText(this, "Device doesn't support Bluetooth", Toast.LENGTH_SHORT).show()
-                setContentView(R.layout.game_selector)
+                return@setOnClickListener
             }
+
+            setContentView(R.layout.activity_1)
+            val scanButton: Button = findViewById(R.id.scan)
+            val startServerButton: Button = findViewById(R.id.startServer)
+            val deviceListView: ListView = findViewById(R.id.deviceList)
+            val statusText: TextView = findViewById(R.id.statusText)
 
             deviceListAdapter = ArrayAdapter(
                 this,
@@ -196,7 +203,15 @@ class MainActivity : ComponentActivity() {
 
 
     private fun pairAndConnect(device: BluetoothDevice) {
+        if (connecting || BluetoothConnection.connectedThread != null) {
+            Toast.makeText(this, "Already connecting...", Toast.LENGTH_SHORT).show()
+            return
+        }
         Log.d(TAG, "Attempting to pair with: ${device.name} - ${device.address}")
+
+        // Joining another device means this one is no longer hosting
+        acceptThread?.cancel()
+        acceptThread = null
 
         when (device.bondState) {
             BluetoothDevice.BOND_BONDED -> {
@@ -215,6 +230,7 @@ class MainActivity : ComponentActivity() {
             }
             BluetoothDevice.BOND_NONE -> {
                 Toast.makeText(this, "Initiating pairing...", Toast.LENGTH_SHORT).show()
+                pendingBondAddress = device.address
                 device.createBond()
             }
         }
@@ -231,18 +247,22 @@ class MainActivity : ComponentActivity() {
             // Request permissions
             requestBluetoothPermissions()
         }
+        if (connecting) return
+        connecting = true
         bluetoothAdapter?.cancelDiscovery()
-        connectThread?.cancel()
         connectThread = ConnectThread(device)
         connectThread?.start()
     }
 
-    private fun connected(socket: BluetoothSocket, device: BluetoothDevice) {
-        // Start the connected thread, disable any more connections and start the game
+    private fun connected(socket: BluetoothSocket, device: BluetoothDevice, asServer: Boolean) {
+        // Start the connected thread, disable any more connections and start the game.
+        // The side that accepted the connection is the server (X, moves first).
+        BluetoothConnection.isServer = asServer
         BluetoothConnection.connectedThread = ConnectedThread(socket)
         BluetoothConnection.connectedThread?.start()
         connectThread = null
         acceptThread = null
+        connecting = false
 
         runOnUiThread {
             findViewById<TextView>(R.id.statusText).text = "Status: Connected to ${device.name}"
@@ -255,6 +275,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun connectionFailed() {
+        connectThread = null
+        connecting = false
         runOnUiThread {
             findViewById<TextView>(R.id.statusText).text = "Status: Connection failed"
             Toast.makeText(this, "Connection failed. Make sure the other device is running as server.", Toast.LENGTH_LONG).show()
@@ -285,7 +307,9 @@ class MainActivity : ComponentActivity() {
 
                 socket?.also {
                     Log.d(TAG, "Server: Connection accepted from ${it.remoteDevice.name}")
-                    connected(it, it.remoteDevice)
+                    // Only one opponent at a time, so stop listening and free the channel
+                    cancel()
+                    connected(it, it.remoteDevice, asServer = true)
                     shouldLoop = false
                 }
             }
@@ -304,24 +328,31 @@ class MainActivity : ComponentActivity() {
 
     private inner class ConnectThread(private val device: BluetoothDevice) : Thread() {
         // Thread to connect to a device (Client)
-        private val socket: BluetoothSocket? by lazy(LazyThreadSafetyMode.NONE) {
-            device.createRfcommSocketToServiceRecord(MY_UUID)
-        }
+        @Volatile
+        private var socket: BluetoothSocket? = null
 
         @Volatile
-        private var shouldClose = true  // Add this flag
+        private var cancelled = false
 
         @RequiresPermission(allOf= [Manifest.permission.BLUETOOTH_SCAN,Manifest.permission.BLUETOOTH_CONNECT])
         override fun run() {
             bluetoothAdapter?.cancelDiscovery()
 
-            socket?.let { socket ->
+            // The first RFCOMM connect after discovery sometimes times out, so try twice
+            for (attempt in 1..2) {
+                if (cancelled) return
+                val socket = try {
+                    device.createRfcommSocketToServiceRecord(MY_UUID).also { this.socket = it }
+                } catch (e: IOException) {
+                    Log.e(TAG, "Client: Could not create socket", e)
+                    break
+                }
                 try {
-                    Log.d(TAG, "Client: Connecting to ${device.name}...")
+                    Log.d(TAG, "Client: Connecting to ${device.name} (attempt $attempt)...")
                     socket.connect()
                     Log.d(TAG, "Client: Connected successfully")
-                    shouldClose = false  // Don't close socket on successful connection
-                    connected(socket, device)
+                    connected(socket, device, asServer = false)
+                    return
                 } catch (e: IOException) {
                     Log.e(TAG, "Client: Connection failed", e)
                     try {
@@ -329,18 +360,18 @@ class MainActivity : ComponentActivity() {
                     } catch (closeException: IOException) {
                         Log.e(TAG, "Could not close socket", closeException)
                     }
-                    connectionFailed()
                 }
+                if (attempt == 1) sleep(1000)
             }
+            if (!cancelled) connectionFailed()
         }
 
         fun cancel() {
-            if (shouldClose) {
-                try {
-                    socket?.close()
-                } catch (e: IOException) {
-                    Log.e(TAG, "Could not close client socket", e)
-                }
+            cancelled = true
+            try {
+                socket?.close()
+            } catch (e: IOException) {
+                Log.e(TAG, "Could not close client socket", e)
             }
         }
     }
@@ -430,14 +461,19 @@ class MainActivity : ComponentActivity() {
                     device?.let {
                         when (bondState) {
                             BluetoothDevice.BOND_BONDED -> {
-                                Toast.makeText(this@MainActivity, "Paired! Now connecting...", Toast.LENGTH_SHORT).show()
                                 Log.d(TAG, "Successfully paired with ${it.name}")
-                                connectToDevice(it)
+                                // Both devices get this broadcast; only the one that asked to pair connects
+                                if (it.address == pendingBondAddress) {
+                                    pendingBondAddress = null
+                                    Toast.makeText(this@MainActivity, "Paired! Now connecting...", Toast.LENGTH_SHORT).show()
+                                    connectToDevice(it)
+                                }
                             }
                             BluetoothDevice.BOND_BONDING -> {
                                 Log.d(TAG, "Pairing with ${it.name}...")
                             }
                             BluetoothDevice.BOND_NONE -> {
+                                if (it.address == pendingBondAddress) pendingBondAddress = null
                                 Toast.makeText(this@MainActivity, "Pairing failed", Toast.LENGTH_SHORT).show()
                                 Log.d(TAG, "Pairing failed with ${it.name}")
                             }
@@ -502,30 +538,75 @@ class ConnectedThread(private val socket: BluetoothSocket) : Thread() {
     private val outputStream: OutputStream = socket.outputStream
     private val buffer: ByteArray = ByteArray(1024)
 
+    // Messages that arrive before a listener is attached are queued, so the
+    // opponent's first move isn't lost while GameActivity is still starting up
+    private val pendingMessages = mutableListOf<String>()
+    private var disconnected = false
+
     var messageListener: ((String) -> Unit)? = null
+        set(value) {
+            val queued = synchronized(this) {
+                field = value
+                if (value == null) emptyList() else pendingMessages.toList().also { pendingMessages.clear() }
+            }
+            queued.forEach { value?.invoke(it) }
+        }
+
+    var disconnectListener: (() -> Unit)? = null
+        set(value) {
+            val alreadyDisconnected = synchronized(this) {
+                field = value
+                disconnected
+            }
+            if (alreadyDisconnected) value?.invoke()
+        }
 
     override fun run() {
-        var numBytes: Int
+        // Bluetooth is a byte stream, so messages are newline-delimited and
+        // may arrive split or merged; accumulate until we have whole lines
+        val partial = StringBuilder()
 
         // Keep listening to the InputStream
         while (true) {
-            numBytes = try {
+            val numBytes = try {
                 inputStream.read(buffer)
             } catch (e: IOException) {
                 Log.e(TAG, "Input stream disconnected", e)
                 break
             }
+            if (numBytes < 0) {
+                Log.d(TAG, "Input stream reached end of stream")
+                break
+            }
 
-            // Send received data to listener
-            val readMsg = String(buffer, 0, numBytes)
-            messageListener?.invoke(readMsg)
-            Log.d(TAG, "Received: $readMsg")
+            partial.append(String(buffer, 0, numBytes))
+            var newline = partial.indexOf("\n")
+            while (newline >= 0) {
+                val readMsg = partial.substring(0, newline)
+                partial.delete(0, newline + 1)
+                Log.d(TAG, "Received: $readMsg")
+                deliver(readMsg)
+                newline = partial.indexOf("\n")
+            }
         }
+
+        val listener = synchronized(this) {
+            disconnected = true
+            disconnectListener
+        }
+        listener?.invoke()
+    }
+
+    private fun deliver(message: String) {
+        val listener = synchronized(this) {
+            messageListener ?: run { pendingMessages.add(message); null }
+        }
+        listener?.invoke(message)
     }
 
     fun write(message: String) {
         try {
-            outputStream.write(message.toByteArray())
+            outputStream.write("$message\n".toByteArray())
             Log.d(TAG, "Sent: $message")
         } catch (e: IOException) {
             Log.e(TAG, "Error writing to output stream", e)

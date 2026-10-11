@@ -10,6 +10,7 @@ import androidx.core.content.res.ResourcesCompat
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -25,7 +26,10 @@ class GameActivity : ComponentActivity() {
     private lateinit var gridLayout: GridLayout
     private lateinit var statusText: TextView
     private val buttons = Array(3) { Array<Button?>(3) { null } }
+    private lateinit var playAgainButton: Button
     private var myTurn = false
+    private var gameOver = false
+    private var opponentLeft = false
     private val mySymbol: String
     private val opponentSymbol: String
 
@@ -91,22 +95,21 @@ class GameActivity : ComponentActivity() {
 
         buildBoard()
 
+        playAgainButton = findViewById(R.id.playAgain)
+        playAgainButton.setOnClickListener {
+            BluetoothConnection.connectedThread?.write("RESET")
+            resetGame()
+        }
+
+        updateUI()
+
+        // Set up listeners (any messages that arrived before this point are delivered now)
+        BluetoothConnection.connectedThread?.disconnectListener = {
+            runOnUiThread { handleDisconnect() }
+        }
         BluetoothConnection.connectedThread?.messageListener = { message ->
             runOnUiThread { handleReceivedMessage(message) }
         }
-
-        updateUI()
-
-
-
-        // Set up message listener
-        BluetoothConnection.connectedThread?.messageListener = { message ->
-            runOnUiThread {
-                handleReceivedMessage(message)
-            }
-        }
-
-        updateUI()
     }
 
     private fun onButtonClick(row: Int, col: Int) {
@@ -155,6 +158,10 @@ class GameActivity : ComponentActivity() {
                 val col = parts[1].toIntOrNull() ?: return
                 val symbol = parts[2]
 
+                // Ignore malformed or out-of-turn moves instead of crashing
+                if (gameOver || myTurn || row !in 0..2 || col !in 0..2 || symbol != opponentSymbol) return
+                if (buttons[row][col]?.text?.isNotEmpty() == true) return
+
                 // Update the button
                 buttons[row][col]?.apply {
                     text = symbol
@@ -169,7 +176,9 @@ class GameActivity : ComponentActivity() {
                 // Check for win or draw
                 checkGameState()
             }
-        } else if (message == "RESET") {
+        } else if (message == "RESET" && gameOver && !opponentLeft) {
+            // Only honour RESET after a finished game, so a duplicate RESET (both
+            // players tapping "Play again") can't wipe a move already in progress
             resetGame()
         }
     }
@@ -201,12 +210,33 @@ class GameActivity : ComponentActivity() {
             }
             disableAllButtons()
             Toast.makeText(this, "Game Over! $loser got 3 in a row and loses!", Toast.LENGTH_LONG).show()
+            endGame()
         } else if (isBoardFull()) {
             statusText.text = "It's a Draw!"
             statusText.setTextColor(getColor(android.R.color.holo_orange_dark))
+            insertTestData(this, "Draw", "Normal")
             disableAllButtons()
             Toast.makeText(this, "Game Over! It's a draw!", Toast.LENGTH_LONG).show()
+            endGame()
         }
+    }
+
+    private fun endGame() {
+        gameOver = true
+        if (!opponentLeft) playAgainButton.visibility = View.VISIBLE
+    }
+
+    private fun handleDisconnect() {
+        opponentLeft = true
+        playAgainButton.visibility = View.GONE
+        if (gameOver) {
+            Toast.makeText(this, "Opponent disconnected", Toast.LENGTH_LONG).show()
+            return
+        }
+        gameOver = true
+        disableAllButtons()
+        statusText.text = "Opponent disconnected"
+        statusText.setTextColor(getColor(android.R.color.holo_red_dark))
     }
 
     private fun checkWinner(): String? {
@@ -274,11 +304,19 @@ class GameActivity : ComponentActivity() {
             }
         }
         myTurn = BluetoothConnection.isServer
+        gameOver = false
+        playAgainButton.visibility = View.GONE
         updateUI()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         BluetoothConnection.connectedThread?.messageListener = null
+        BluetoothConnection.connectedThread?.disconnectListener = null
+        if (isFinishing) {
+            // Leaving the game ends the match; closing the socket lets the opponent know
+            BluetoothConnection.connectedThread?.cancel()
+            BluetoothConnection.connectedThread = null
+        }
     }
 }

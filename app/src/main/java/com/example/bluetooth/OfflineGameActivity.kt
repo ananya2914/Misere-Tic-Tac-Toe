@@ -265,6 +265,7 @@ class OfflineGameActivity : ComponentActivity() {
             insertTestData(this, "Draw", difficulty)
             disableAllButtons()
             Toast.makeText(this, "Game Over! It's a draw!", Toast.LENGTH_LONG).show()
+            gameOver = true
         }
     }
 
@@ -334,12 +335,5 @@ class OfflineGameActivity : ComponentActivity() {
         myTurn = true
         gameOver = false
         updateUI()
-    }
-
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        BluetoothConnection.connectedThread?.messageListener = null
     }
 }

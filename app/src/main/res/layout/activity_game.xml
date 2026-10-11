@@ -34,4 +34,18 @@
         app:columnCount="3"
         app:rowCount="3" />
 
+    <Button
+        android:id="@+id/playAgain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:text="PLAY AGAIN"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@drawable/btn_primary_bg"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:visibility="gone" />
+
 </LinearLayout>

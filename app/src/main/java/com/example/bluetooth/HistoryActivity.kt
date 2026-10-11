@@ -104,8 +104,11 @@ fun DisplayRecords() {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // 🏆 Result section
-                        val isDraw = game.result.contains("draw", ignoreCase = true)
-                        val resultEmoji = if (isDraw) "🤝" else "🏆"
+                        val resultEmoji = when (game.result.lowercase()) {
+                            "won" -> "🏆"
+                            "lost" -> "❌"
+                            else -> "🤝"
+                        }
                         Text(
                             text = "$resultEmoji  Result: ${game.result}",
                             style = MaterialTheme.typography.bodyLarge
